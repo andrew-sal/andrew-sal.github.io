@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="byeStyles.css">
+    <style>
+        canvas {
+            border: 1px solid #000;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="pongCanvas" width="800" height="400"></canvas>
+
+    <script>
+        // Get the canvas element
+        var canvas = document.getElementById("pongCanvas");
+        var context = canvas.getContext("2d");
+
+        // Set initial positions and dimensions for the paddle and ball
+        var paddleWidth = 10;
+        var paddleHeight = 100;
+        var paddleSpeed = 5;
+        var paddle1Y = canvas.height / 2 - paddleHeight / 2;
+        var paddle2Y = canvas.height / 2 - paddleHeight / 2;
+
+        var ballX = canvas.width / 2;
+        var ballY = canvas.height / 2;
+        var ballSpeedX = 5;
+        var ballSpeedY = 5;
+        var ballRadius = 10;
+
+        var gameOver = false;
+
+        // Keydown event listeners
+        var upArrowPressed = false;
+        var downArrowPressed = false;
+        var wKeyPressed = false;
+        var sKeyPressed = false;
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "ArrowUp") {
+                upArrowPressed = true;
+            } else if (event.key === "ArrowDown") {
+                downArrowPressed = true;
+            } else if (event.key === "w") {
+                wKeyPressed = true;
+            } else if (event.key === "s") {
+                sKeyPressed = true;
+            }
+        });
+
+        document.addEventListener("keyup", function (event) {
+            if (event.key === "ArrowUp") {
+                upArrowPressed = false;
+            } else if (event.key === "ArrowDown") {
+                downArrowPressed = false;
+            } else if (event.key === "w") {
+                wKeyPressed = false;
+            } else if (event.key === "s") {
+                sKeyPressed = false;
+            }
+        });
+
+        // Update the game state and redraw the canvas
+        function update() {
+            if (!gameOver) {
+                movePaddle();
+                moveBall();
+                draw();
+                checkGameOver();
+            }
+        }
+
+        // Move the paddles based on the arrow key inputs
+        function movePaddle() {
+            // Move paddle 1 (left paddle)
+            if (upArrowPressed && paddle1Y > 0) {
+                paddle1Y -= paddleSpeed;
+            } else if (downArrowPressed && paddle1Y < canvas.height - paddleHeight) {
+                paddle1Y += paddleSpeed;
+            }
+
+            // Move paddle 2 (right paddle)
+            if (wKeyPressed && paddle2Y > 0) {
+                paddle2Y -= paddleSpeed;
+            } else if (sKeyPressed && paddle2Y < canvas.height - paddleHeight) {
+                paddle2Y += paddleSpeed;
+            }
+        }
+
+        // Move the ball and handle collisions with paddles and walls
+        function moveBall() {
+            // Move the ball
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
+
+            // Check for collision with paddles
+            if (ballX - ballRadius < paddleWidth && ballY > paddle1Y && ballY < paddle1Y + paddleHeight) {
+                ballSpeedX = -ballSpeedX;
+            } else if (ballX + ballRadius > canvas.width - paddleWidth && ballY > paddle2Y && ballY < paddle2Y + paddleHeight) {
+                ballSpeedX = -ballSpeedX;
+            }
+
+            // Check for collision with top and bottom walls
+            if (ballY - ballRadius < 0 || ballY + ballRadius > canvas.height) {
+                ballSpeedY = -ballSpeedY;
+            }
+        }
+
+        // Draw the paddles and ball on the canvas
+        function draw() {
+            // Clear the canvas
+            context.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw paddle 1 (left paddle)
+            context.fillRect(paddleWidth, paddle1Y, paddleWidth, paddleHeight);
+
+            // Draw paddle 2 (right paddle)
+            context.fillRect(canvas.width - 2 * paddleWidth, paddle2Y, paddleWidth, paddleHeight);
+
+            // Draw the ball
+            context.beginPath();
+            context.arc(ballX, ballY, ballRadius, 0, Math.PI * 2, false);
+            context.fill();
+            context.closePath();
+        }
+
+        // Check if the game is over
+        function checkGameOver() {
+            // Check if the ball reaches the left or right boundary
+            if (ballX - ballRadius < 0 || ballX + ballRadius > canvas.width) {
+                gameOver = true;
+                restartGame();
+            }
+        }
+
+        // Restart the game
+        function restartGame() {
+            // Reset the game state to its initial values
+            paddle1Y = canvas.height / 2 - paddleHeight / 2;
+            paddle2Y = canvas.height / 2 - paddleHeight / 2;
+            ballX = canvas.width / 2;
+            ballY = canvas.height / 2;
+            ballSpeedX = 5;
+            ballSpeedY = 5;
+            gameOver = false;
+        }
+
+        // Call the update function repeatedly to create animation
+        setInterval(update, 20);
+    </script>
+</body>
+</html>
